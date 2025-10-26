@@ -1,0 +1,10 @@
+{
+  "name": "ride-summary",
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "pdfkit": "^0.13.0"
+  },
+  "scripts": { "dev": "next", "build": "next build", "start": "next start" }
+}
