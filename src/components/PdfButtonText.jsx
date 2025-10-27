@@ -1,23 +1,22 @@
 import jsPDF from "jspdf";
+import { colors } from "../theme";
 
 export default function PdfButtonText({ activity, details, metrics, zones }) {
   const onClick = () => {
-    // Loud runtime proof:
-    alert("[TEXT PDF] generator running");     // <-- You WILL see this
-    console.log("[TEXT PDF] generator running");
-
     const doc = new jsPDF();
-    const stamp = `Text PDF v3 • ${new Date().toISOString()}`;
+    const stamp = `Ride Summary • ${new Date().toLocaleString()}`;
     doc.setFontSize(9);
-    doc.text(stamp, 20, 10);                   // <-- Appears at top-left
+    doc.text(stamp, 20, 10);
 
     const line = (y, k, v) => doc.text(`${k}: ${v}`, 20, y);
 
     doc.setFontSize(18);
+    doc.setTextColor(colors.primaryDark);
     doc.text(`Ride Summary: ${activity?.name ?? "Ride"}`, 20, 22);
 
     doc.setFontSize(12);
-    line(35, "Date", new Date(details?.start_date_local ?? activity?.start_date_local ?? Date.now()).toLocaleString());
+    doc.setTextColor(0, 0, 0);
+    line(35, "Date", new Date(details?.start_date_local ?? Date.now()).toLocaleString());
     line(45, "Distance", `${metrics?.distanceMi ?? "—"} mi`);
     line(55, "Moving Time", metrics?.time ?? "—");
     line(65, "Elevation Gain", `${metrics?.elevFt ?? "—"} ft`);
@@ -35,24 +34,28 @@ export default function PdfButtonText({ activity, details, metrics, zones }) {
     doc.text("HR Zones (%)", 100, 155);
     (zones?.hr ?? []).forEach((z, i) => doc.text(`Z${i + 1}: ${z}%`, 110, 165 + i * 8));
 
+    const driftNum = parseFloat((metrics?.hrDrift ?? "").toString().replace("%",""));
+    const driftText = Number.isFinite(driftNum)
+      ? (driftNum <= 5 ? "excellent aerobic efficiency"
+        : driftNum <= 10 ? "moderate aerobic stability"
+        : "high decoupling — aerobic endurance could improve")
+      : "insufficient data";
+
     doc.text("Summary:", 20, 210);
     doc.text(
 `This ride covered ${metrics?.distanceMi ?? "—"} miles with ${metrics?.elevFt ?? "—"} ft of climbing.
 Average power ${metrics?.avgPwr ?? "—"} W, normalized power ${metrics?.np ?? "—"} W.
 Intensity Factor ${metrics?.if ?? "—"}, TSS ${metrics?.tss ?? "—"}.
-Heart rate drift ${metrics?.hrDrift ?? "—"} → ${
-        Number.isFinite(parseFloat((metrics?.hrDrift ?? "").toString().replace("%","")))
-          ? (parseFloat(metrics.hrDrift) <= 5 ? "excellent aerobic efficiency"
-            : parseFloat(metrics.hrDrift) <= 10 ? "moderate aerobic stability"
-            : "high decoupling — aerobic endurance could improve")
-          : "insufficient data"
-      }.`,
+Heart rate drift ${metrics?.hrDrift ?? "—"} → ${driftText}.`,
       20, 220, { maxWidth: 170 }
     );
 
-    // Distinct filename proves which path fired:
-    doc.save(`ride-summary-TEXT-${activity?.id ?? "ride"}.pdf`);
+    doc.save(`ride-summary-${activity?.id ?? "ride"}.pdf`);
   };
 
-  return <button className="primary" onClick={onClick}>Export Readable PDF (TEXT)</button>;
+  return (
+    <button className="btn-primary" onClick={onClick}>
+      Export PDF
+    </button>
+  );
 }
