@@ -4,143 +4,222 @@ import {
   Line,
   XAxis,
   YAxis,
-  Tooltip,
   CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 import { colors, shadows, shape, typography } from "../theme.js";
-import PdfButtonText from "./PdfButtonText.jsx";
-import "../theme.css";
+import TxtExport from "./TxtExport.jsx";
 
 export default function RideDetails({ activity, details, series, metrics, zones }) {
+  // === GUARD CLAUSES ===
   if (!activity) {
     return (
-      <div className="card">
-        <h3>No ride selected</h3>
-        <p className="text-muted">
-          Select a ride from the sidebar to view its detailed analysis.
-        </p>
+      <div
+        style={{
+          ...typography.bodyLarge,
+          color: colors.onSurface,
+          textAlign: "center",
+          marginTop: "20vh",
+        }}
+      >
+        Select a ride from the sidebar to view analysis.
       </div>
     );
   }
 
-  // Format helper
-  const fmt = (val, unit = "") =>
-    val !== undefined && val !== null ? `${val.toFixed(1)}${unit}` : "—";
+  if (!details || !metrics) {
+    return (
+      <div
+        style={{
+          ...typography.bodyLarge,
+          color: colors.onSurface,
+          textAlign: "center",
+          marginTop: "20vh",
+        }}
+      >
+        Loading ride data...
+      </div>
+    );
+  }
+
+  // === SAFE METRIC VALUES ===
+  const distance = (details?.distance / 1609)?.toFixed(1) || 0;
+  const avgPower = metrics?.avg_power ?? 0;
+  const avgHr = metrics?.average_heartrate ?? 0;
+  const maxPower = metrics?.max_power ?? 0;
+  const movingTime = metrics?.moving_time ?? 0;
+  const elevation = details?.total_elevation_gain ?? 0;
+
+  // === TIME FORMATTING ===
+  const hours = Math.floor(movingTime / 3600);
+  const minutes = Math.floor((movingTime % 3600) / 60);
+
+  // === CHART DATA SAFETY ===
+  const hasSeries = Array.isArray(series) && series.length > 0;
+  const chartData = hasSeries
+    ? series.map((d, i) => ({
+        index: i,
+        power: d.watts ?? 0,
+        hr: d.heartrate ?? 0,
+      }))
+    : [];
 
   return (
-    <div className="ride-details">
-      {/* === HEADER CARD === */}
-      <div className="card">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <div>
-            <h3 style={{ color: colors.primary, marginBottom: 4 }}>
-              {activity.name}
-            </h3>
-            <p style={{ margin: 0, opacity: 0.8 }}>
-              {new Date(activity.start_date_local).toLocaleString()}
-            </p>
-            <p style={{ margin: 0, color: colors.secondary, fontWeight: 500 }}>
-              {activity.type}
-            </p>
+    <div
+      style={{
+        background: colors.surface,
+        color: colors.onSurface,
+        padding: 24,
+        borderRadius: shape.cardRadius,
+        boxShadow: shadows.large,
+      }}
+    >
+      {/* === HEADER SECTION === */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 20,
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              ...typography.titleLarge,
+              color: colors.primary,
+              margin: 0,
+            }}
+          >
+            {activity.name}
+          </h2>
+          <p style={{ ...typography.bodyMedium, opacity: 0.8, marginTop: 4 }}>
+            {new Date(activity.start_date_local).toLocaleDateString()} •{" "}
+            {distance} mi • {hours > 0 ? `${hours}h ` : ""}
+            {minutes}m
+          </p>
+        </div>
+        <TxtExport
+          activity={activity}
+          details={details}
+          metrics={metrics}
+          zones={zones}
+        />
+      </div>
+
+      {/* === METRIC SUMMARY === */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        {[
+          { label: "Avg Power", value: `${avgPower} W` },
+          { label: "Max Power", value: `${maxPower} W` },
+          { label: "Avg HR", value: `${avgHr} bpm` },
+          { label: "Elevation", value: `${elevation.toFixed(0)} ft` },
+        ].map((m) => (
+          <div
+            key={m.label}
+            style={{
+              background: colors.surfaceVariant,
+              borderRadius: shape.cardRadius,
+              padding: "12px 16px",
+              boxShadow: shadows.small,
+            }}
+          >
+            <div
+              style={{
+                ...typography.labelSmall,
+                textTransform: "uppercase",
+                color: colors.onSurfaceVariant,
+                marginBottom: 4,
+              }}
+            >
+              {m.label}
+            </div>
+            <div
+              style={{
+                ...typography.titleMedium,
+                color: colors.primary,
+              }}
+            >
+              {m.value}
+            </div>
           </div>
-          <PdfButtonText
-            data={{ activity, details, metrics }}
-            fileName={`${activity.name.replace(/\s+/g, "_")}_summary.pdf`}
-          />
-        </div>
+        ))}
       </div>
 
-      {/* === SUMMARY METRICS === */}
-      <div className="card">
-        <h3>Summary Metrics</h3>
+      {/* === MAIN CHART === */}
+      {hasSeries ? (
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-            gap: "0.75rem",
-            marginTop: "0.5rem",
+            background: colors.surfaceVariant,
+            borderRadius: shape.cardRadius,
+            padding: 20,
+            boxShadow: shadows.medium,
           }}
         >
-          <div><strong>Distance:</strong> {fmt(activity.distance / 1609, " mi")}</div>
-          <div><strong>Moving Time:</strong> {(activity.moving_time / 60).toFixed(0)} min</div>
-          <div><strong>Avg Speed:</strong> {fmt(activity.average_speed * 2.23694, " mph")}</div>
-          <div><strong>Avg Power:</strong> {fmt(metrics.avg_power, " W")}</div>
-          <div><strong>HR Drift:</strong> {fmt(metrics.hr_drift, "%")}</div>
-          <div><strong>Elevation Gain:</strong> {fmt(activity.total_elevation_gain * 3.281, " ft")}</div>
+          <h3 style={{ ...typography.titleMedium, color: colors.onSurface }}>
+            Power vs Heart Rate
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={colors.outline} />
+              <XAxis
+                dataKey="index"
+                tick={false}
+                label={{ value: "Time", position: "insideBottomRight", offset: -5 }}
+              />
+              <YAxis
+                yAxisId="left"
+                label={{
+                  value: "Power (W)",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 10,
+                }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                label={{
+                  value: "Heart Rate (bpm)",
+                  angle: 90,
+                  position: "insideRight",
+                  offset: 10,
+                }}
+              />
+              <Tooltip />
+              <Legend />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="power"
+                stroke={colors.primary}
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="hr"
+                stroke={colors.secondary}
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
-      </div>
-
-      {/* === POWER + HR CHART === */}
-      <div className="chart-container">
-        <div className="chart-title">Power & Heart Rate Over Time</div>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={series}>
-            <CartesianGrid strokeDasharray="3 3" stroke={colors.outline} />
-            <XAxis dataKey="time" tick={{ fontSize: 11 }} />
-            <YAxis
-              yAxisId="left"
-              orientation="left"
-              stroke={colors.primary}
-              label={{
-                value: "Power (W)",
-                angle: -90,
-                position: "insideLeft",
-                fill: colors.primary,
-                fontSize: 12,
-              }}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              stroke={colors.secondary}
-              label={{
-                value: "Heart Rate (bpm)",
-                angle: 90,
-                position: "insideRight",
-                fill: colors.secondary,
-                fontSize: 12,
-              }}
-            />
-            <Tooltip />
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="power"
-              stroke={colors.primary}
-              dot={false}
-              strokeWidth={2}
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="heart_rate"
-              stroke={colors.secondary}
-              dot={false}
-              strokeWidth={2}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* === ZONE DISTRIBUTION (Optional Future) === */}
-      {zones && Object.keys(zones).length > 0 && (
-        <div className="card">
-          <h3>Time in Zones</h3>
-          <ul style={{ paddingLeft: "1rem", margin: 0 }}>
-            {Object.entries(zones).map(([zone, value]) => (
-              <li key={zone}>
-                <strong>{zone}:</strong> {fmt(value, " min")}
-              </li>
-            ))}
-          </ul>
-        </div>
+      ) : (
+        <p style={{ ...typography.bodyMedium, textAlign: "center" }}>
+          No stream data available for this ride.
+        </p>
       )}
     </div>
   );
