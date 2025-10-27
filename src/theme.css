@@ -1,126 +1,240 @@
+/* =========================================================
+   Material Design 3 (MD3) Theme – Red & Blue Palette
+   ========================================================= */
+
+/* ---------- Root Variables ---------- */
 :root {
-  /* === Material Design 3 red-blue theme === */
-  --md3-primary: #E53935;
-  --md3-primary-dark: #B71C1C;
-  --md3-secondary: #1E88E5;
-  --md3-secondary-dark: #0D47A1;
-  --md3-surface: #F9FAFC;
-  --md3-surface-alt: #FFFFFF;
-  --md3-on-surface: #1A1A1A;
-  --md3-outline: #E0E0E0;
-  --md3-shadow: rgba(0, 0, 0, 0.1);
-  --md3-card-radius: 16px;
-  --md3-button-radius: 12px;
-  --md3-transition: 0.2s ease-in-out;
-  --md3-font-sans: "Inter", "Roboto", "Segoe UI", sans-serif;
+  --md3-primary: #e53935;           /* Red accent */
+  --md3-secondary: #1e88e5;         /* Blue accent */
+  --md3-surface: #ffffff;           /* Cards, panels */
+  --md3-background: #f9f9fb;        /* App background */
+  --md3-text: #212121;              /* Primary text */
+  --md3-outline: #dadce0;           /* Borders/dividers */
+  --md3-shadow: rgba(0, 0, 0, 0.1); /* General elevation */
+  --md3-radius: 12px;               /* Default corner radius */
 }
 
-/* === Base === */
-body {
+/* ---------- Global Base Styles ---------- */
+html, body {
   margin: 0;
-  background: var(--md3-surface);
-  color: var(--md3-on-surface);
-  font-family: var(--md3-font-sans);
+  padding: 0;
+  font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--md3-background);
+  color: var(--md3-text);
+  height: 100%;
 }
 
-/* === Top Bar === */
-.top-bar {
+/* Smooth scroll and cleaner look */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* =========================================================
+   Layout Structure
+   ========================================================= */
+
+/* --- Main App Layout --- */
+.app-layout {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(90deg, var(--md3-primary), var(--md3-secondary));
-  color: white;
-  padding: 12px 20px;
-  box-shadow: 0 2px 6px var(--md3-shadow);
-  font-weight: 600;
-  font-size: 18px;
+  height: 100vh;
+  background: var(--md3-background);
 }
 
-/* === Sidebar === */
+/* --- Sidebar --- */
 .sidebar {
   width: 260px;
-  background: var(--md3-surface-alt);
+  background-color: var(--md3-surface);
   border-right: 1px solid var(--md3-outline);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sidebar h2 {
-  font-size: 18px;
-  margin-bottom: 10px;
-  color: var(--md3-primary-dark);
-}
-.sidebar button {
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 10px 12px;
-  border-radius: var(--md3-button-radius);
-  font-size: 15px;
-  cursor: pointer;
-  color: var(--md3-on-surface);
-  transition: background var(--md3-transition), transform var(--md3-transition);
-}
-.sidebar button:hover {
-  background: rgba(229, 57, 53, 0.08);
-  transform: translateX(3px);
+  padding: 1rem;
+  overflow-y: auto;
+  box-shadow: 2px 0 6px var(--md3-shadow);
 }
 
-/* === Main === */
+.sidebar-title {
+  margin-top: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--md3-text);
+}
+
+.sidebar-loading {
+  color: var(--md3-secondary);
+  opacity: 0.8;
+  font-style: italic;
+  margin-top: 1rem;
+}
+
+/* --- Activity List --- */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.activity-button {
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--md3-radius);
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.activity-button:hover {
+  background: rgba(30, 136, 229, 0.08);
+  box-shadow: 0 2px 4px var(--md3-shadow);
+}
+
+.activity-button.active {
+  border: 1px solid var(--md3-secondary);
+  background: rgba(30, 136, 229, 0.12);
+  box-shadow: 0 3px 6px var(--md3-shadow);
+}
+
+.activity-name {
+  font-weight: 600;
+  color: var(--md3-text);
+}
+
+.activity-meta {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.activity-type {
+  font-size: 12px;
+  color: var(--md3-secondary);
+  text-transform: capitalize;
+}
+
+/* --- Dashboard --- */
 .dashboard {
   flex: 1;
   padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.card {
-  background: var(--md3-surface-alt);
-  border-radius: var(--md3-card-radius);
-  padding: 20px;
-  box-shadow: 0 2px 6px var(--md3-shadow);
-  transition: box-shadow var(--md3-transition);
-}
-.card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+  background: var(--md3-surface);
 }
 
-/* === Buttons === */
-button.btn-primary,
-button.btn-secondary {
-  padding: 10px 18px;
-  font-size: 15px;
-  border-radius: var(--md3-button-radius);
-  cursor: pointer;
+/* --- Top Bar --- */
+.top-bar {
+  background: linear-gradient(90deg, var(--md3-primary), var(--md3-secondary));
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--md3-radius);
+  box-shadow: 0 2px 6px var(--md3-shadow);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* =========================================================
+   Buttons
+   ========================================================= */
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--md3-primary), var(--md3-secondary));
+  color: #fff;
   border: none;
-  color: white;
-  font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  border-radius: var(--md3-radius);
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 6px var(--md3-shadow);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-button.btn-primary {
-  background: linear-gradient(90deg, var(--md3-primary), var(--md3-secondary));
-}
-button.btn-secondary {
-  background: var(--md3-secondary);
-}
-button.btn-primary:hover,
-button.btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px var(--md3-shadow);
 }
 
-/* === Charts === */
-.recharts-wrapper {
-  background: var(--md3-surface-alt);
-  border-radius: var(--md3-card-radius);
-  padding: 8px;
-  box-shadow: 0 2px 4px var(--md3-shadow);
+.btn-secondary {
+  background: var(--md3-secondary);
+  color: #fff;
+  border: none;
+  border-radius: var(--md3-radius);
+  padding: 0.5rem 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
 }
-.recharts-legend-item text {
-  fill: var(--md3-on-surface);
+
+.btn-secondary:hover {
+  opacity: 0.9;
 }
-.recharts-tooltip-wrapper {
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+
+/* =========================================================
+   Cards & Containers
+   ========================================================= */
+
+.card {
+  background-color: var(--md3-surface);
+  border-radius: var(--md3-radius);
+  box-shadow: 0 4px 10px var(--md3-shadow);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.card h3 {
+  margin-top: 0;
+  color: var(--md3-primary);
+}
+
+.card p {
+  margin-bottom: 0.5rem;
+}
+
+/* =========================================================
+   Charts & Visuals
+   ========================================================= */
+
+.chart-container {
+  background: var(--md3-surface);
+  border-radius: var(--md3-radius);
+  box-shadow: 0 3px 8px var(--md3-shadow);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--md3-secondary);
+}
+
+/* =========================================================
+   Utility & Responsive
+   ========================================================= */
+
+.text-muted {
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--md3-outline);
+  }
+
+  .dashboard {
+    padding: 16px;
+  }
+
+  .top-bar {
+    font-size: 1.1rem;
+    border-radius: 0;
+  }
 }
