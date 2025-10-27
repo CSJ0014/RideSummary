@@ -1,195 +1,147 @@
+import React from "react";
 import {
-  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
   YAxis,
   Tooltip,
-  Legend,
+  CartesianGrid,
+  ResponsiveContainer,
 } from "recharts";
+import { colors, shadows, shape, typography } from "../theme.js";
 import PdfButtonText from "./PdfButtonText.jsx";
-import TxtExport from "./TxtExport.jsx";
-import { colors, typography, shape, shadows } from "../theme";
+import "../theme.css";
 
 export default function RideDetails({ activity, details, series, metrics, zones }) {
-  if (!activity || !details || !metrics) {
+  if (!activity) {
     return (
-      <div className="card" style={{ textAlign: "center", padding: 32 }}>
-        <h3 style={{ color: colors.primary }}>Select a ride to view details</h3>
+      <div className="card">
+        <h3>No ride selected</h3>
+        <p className="text-muted">
+          Select a ride from the sidebar to view its detailed analysis.
+        </p>
       </div>
     );
   }
 
-  const summaryItems = [
-    { label: "Distance", value: `${metrics.distanceMi} mi` },
-    { label: "Moving Time", value: metrics.time },
-    { label: "Elevation Gain", value: `${metrics.elevFt} ft` },
-    { label: "Avg Power", value: `${metrics.avgPwr} W` },
-    { label: "Avg HR", value: `${metrics.avgHr} bpm` },
-    { label: "Max HR", value: `${metrics.maxHr} bpm` },
-    { label: "Normalized Power", value: `${metrics.np} W` },
-    { label: "Intensity Factor", value: metrics.if },
-    { label: "TSS", value: metrics.tss },
-    { label: "HR Drift", value: metrics.hrDrift },
-  ];
+  // Format helper
+  const fmt = (val, unit = "") =>
+    val !== undefined && val !== null ? `${val.toFixed(1)}${unit}` : "—";
 
   return (
-    <div className="dashboard" id="ride-report">
-      {/* === RIDE SUMMARY === */}
-      <div
-        className="card"
-        style={{
-          boxShadow: shadows.medium,
-          borderRadius: shape.cardRadius,
-          background: colors.surfaceAlt,
-        }}
-      >
-        <h3
-          style={{
-            color: colors.primary,
-            ...typography.titleMedium,
-            marginBottom: 16,
-          }}
-        >
-          Ride Summary
-        </h3>
-
+    <div className="ride-details">
+      {/* === HEADER CARD === */}
+      <div className="card">
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-            gap: "10px 16px",
-            marginBottom: 20,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          {summaryItems.map((item, i) => (
-            <div key={i}>
-              <div
-                style={{
-                  fontSize: 13,
-                  textTransform: "uppercase",
-                  color: colors.primaryDark,
-                  fontWeight: 500,
-                }}
-              >
-                {item.label}
-              </div>
-              <div
-                style={{
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: colors.onSurface,
-                }}
-              >
-                {item.value}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* === EXPORT BUTTONS === */}
-        <div style={{ display: "flex", gap: 12 }}>
+          <div>
+            <h3 style={{ color: colors.primary, marginBottom: 4 }}>
+              {activity.name}
+            </h3>
+            <p style={{ margin: 0, opacity: 0.8 }}>
+              {new Date(activity.start_date_local).toLocaleString()}
+            </p>
+            <p style={{ margin: 0, color: colors.secondary, fontWeight: 500 }}>
+              {activity.type}
+            </p>
+          </div>
           <PdfButtonText
-            activity={activity}
-            details={details}
-            metrics={metrics}
-            zones={zones}
-          />
-          <TxtExport
-            activity={activity}
-            metrics={metrics}
-            zones={zones}
+            data={{ activity, details, metrics }}
+            fileName={`${activity.name.replace(/\s+/g, "_")}_summary.pdf`}
           />
         </div>
       </div>
 
-      {/* === CHARTS === */}
-      <div
-        className="card"
-        style={{
-          boxShadow: shadows.medium,
-          borderRadius: shape.cardRadius,
-          background: colors.surfaceAlt,
-        }}
-      >
-        <h3
+      {/* === SUMMARY METRICS === */}
+      <div className="card">
+        <h3>Summary Metrics</h3>
+        <div
           style={{
-            color: colors.secondary,
-            ...typography.titleMedium,
-            marginBottom: 8,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: "0.75rem",
+            marginTop: "0.5rem",
           }}
         >
-          Power & Heart Rate
-        </h3>
+          <div><strong>Distance:</strong> {fmt(activity.distance / 1609, " mi")}</div>
+          <div><strong>Moving Time:</strong> {(activity.moving_time / 60).toFixed(0)} min</div>
+          <div><strong>Avg Speed:</strong> {fmt(activity.average_speed * 2.23694, " mph")}</div>
+          <div><strong>Avg Power:</strong> {fmt(metrics.avg_power, " W")}</div>
+          <div><strong>HR Drift:</strong> {fmt(metrics.hr_drift, "%")}</div>
+          <div><strong>Elevation Gain:</strong> {fmt(activity.total_elevation_gain * 3.281, " ft")}</div>
+        </div>
+      </div>
 
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart
-            data={series}
-            margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          >
-            <XAxis
-              dataKey="time"
-              stroke={colors.onSurface}
-              tick={{ fontSize: 12 }}
-            />
+      {/* === POWER + HR CHART === */}
+      <div className="chart-container">
+        <div className="chart-title">Power & Heart Rate Over Time</div>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={series}>
+            <CartesianGrid strokeDasharray="3 3" stroke={colors.outline} />
+            <XAxis dataKey="time" tick={{ fontSize: 11 }} />
             <YAxis
               yAxisId="left"
-              stroke={colors.power}
-              tick={{ fontSize: 12 }}
+              orientation="left"
+              stroke={colors.primary}
+              label={{
+                value: "Power (W)",
+                angle: -90,
+                position: "insideLeft",
+                fill: colors.primary,
+                fontSize: 12,
+              }}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
-              stroke={colors.hr}
-              tick={{ fontSize: 12 }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: colors.surfaceAlt,
-                borderRadius: "8px",
-                border: `1px solid ${colors.outline}`,
-                fontSize: "12px",
-              }}
-              labelStyle={{
-                color: colors.onSurface,
-                fontWeight: "bold",
+              stroke={colors.secondary}
+              label={{
+                value: "Heart Rate (bpm)",
+                angle: 90,
+                position: "insideRight",
+                fill: colors.secondary,
+                fontSize: 12,
               }}
             />
-            <Legend
-              wrapperStyle={{ paddingTop: 12 }}
-              iconType="circle"
-              formatter={(value) => (
-                <span
-                  style={{
-                    color: colors.onSurface,
-                    fontSize: 13,
-                  }}
-                >
-                  {value}
-                </span>
-              )}
-            />
+            <Tooltip />
             <Line
               yAxisId="left"
               type="monotone"
               dataKey="power"
-              stroke={colors.power}
-              strokeWidth={2.2}
+              stroke={colors.primary}
               dot={false}
-              name="Power (W)"
+              strokeWidth={2}
             />
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="hr"
-              stroke={colors.hr}
-              strokeWidth={1.8}
+              dataKey="heart_rate"
+              stroke={colors.secondary}
               dot={false}
-              name="Heart Rate (bpm)"
+              strokeWidth={2}
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      {/* === ZONE DISTRIBUTION (Optional Future) === */}
+      {zones && Object.keys(zones).length > 0 && (
+        <div className="card">
+          <h3>Time in Zones</h3>
+          <ul style={{ paddingLeft: "1rem", margin: 0 }}>
+            {Object.entries(zones).map(([zone, value]) => (
+              <li key={zone}>
+                <strong>{zone}:</strong> {fmt(value, " min")}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
