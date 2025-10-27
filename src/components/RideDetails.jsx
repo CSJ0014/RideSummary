@@ -16,15 +16,15 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import PdfButton from "./PdfButton.jsx";
+import PdfButtonText from "./PdfButtonText.jsx";
 
 const COLORS = [
-  "#2E7D32",
-  "#66BB6A",
-  "#81C784",
-  "#A5D6A7",
-  "#C8E6C9",
-  "#E8F5E9",
+  "#332e7dff",
+  "#6670bbff",
+  "#8181c7ff",
+  "#a5a6d6ff",
+  "#cac8e6ff",
+  "#e9e8f5ff",
 ];
 
 function mToMiles(m) {
@@ -206,7 +206,7 @@ export default function RideDetails({ activity, fetchDetails, fetchStreams }) {
       </div>
 
       <div className="actions" style={{ marginTop: 8 }}>
-        <PdfButton
+        <PdfButtonText
           activity={activity}
           details={details}
           metrics={metrics}

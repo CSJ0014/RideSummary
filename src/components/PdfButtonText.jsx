@@ -1,12 +1,19 @@
 import jsPDF from "jspdf";
 
-export default function PdfButton({ activity, details, metrics, zones }) {
+export default function PdfButtonText({ activity, details, metrics, zones }) {
   const onClick = () => {
+    console.log("[TEXT PDF] generator running");           // <— visible in devtools
+    const stamp = `Text PDF v2 • ${new Date().toISOString()}`;
     const doc = new jsPDF();
+
+    // Version stamp so we can visually confirm the build
+    doc.setFontSize(9);
+    doc.text(stamp, 20, 10);
+
     const line = (y, label, value) => doc.text(`${label}: ${value}`, 20, y);
 
     doc.setFontSize(18);
-    doc.text(`Ride Summary: ${activity?.name ?? "Ride"}`, 20, 20);
+    doc.text(`Ride Summary: ${activity?.name ?? "Ride"}`, 20, 22);
 
     doc.setFontSize(12);
     line(35, "Date", new Date(details?.start_date_local ?? activity?.start_date_local ?? Date.now()).toLocaleString());
@@ -22,14 +29,10 @@ export default function PdfButton({ activity, details, metrics, zones }) {
     line(135, "HR Drift", `${metrics?.hrDrift ?? "—"}`);
 
     doc.text("Power Zones (%)", 20, 155);
-    (zones?.power ?? []).forEach((z, i) =>
-      doc.text(`Z${i + 1}: ${z}%`, 30, 165 + i * 8)
-    );
+    (zones?.power ?? []).forEach((z, i) => doc.text(`Z${i + 1}: ${z}%`, 30, 165 + i * 8));
 
     doc.text("HR Zones (%)", 100, 155);
-    (zones?.hr ?? []).forEach((z, i) =>
-      doc.text(`Z${i + 1}: ${z}%`, 110, 165 + i * 8)
-    );
+    (zones?.hr ?? []).forEach((z, i) => doc.text(`Z${i + 1}: ${z}%`, 110, 165 + i * 8));
 
     const driftNum = parseFloat((metrics?.hrDrift ?? "").toString().replace("%",""));
     const driftText = Number.isFinite(driftNum)
@@ -49,12 +52,9 @@ Heart rate drift ${metrics?.hrDrift ?? "—"} → ${driftText}.`,
       { maxWidth: 170 }
     );
 
-    doc.save(`ride-summary-${activity?.id ?? "ride"}.pdf`);
+    // Note the filename includes TEXT to confirm path used
+    doc.save(`ride-summary-TEXT-${activity?.id ?? "ride"}.pdf`);
   };
 
-  return (
-    <button className="primary" onClick={onClick}>
-      Export Readable PDF
-    </button>
-  );
+  return <button className="primary" onClick={onClick}>Export Readable PDF (TEXT)</button>;
 }
