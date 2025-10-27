@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import RideDetails from "./components/RideDetails.jsx";
-import { colors, shadows, shape, typography } from "./theme.js";
 import "./theme.css";
 
 export default function App() {
@@ -32,7 +31,6 @@ export default function App() {
       const res = await fetch(`/api/activity/${activity.id}`);
       const data = await res.json();
 
-      // expected structure from backend
       setDetails(data.details);
       setSeries(data.series);
       setMetrics(data.metrics);
@@ -43,64 +41,39 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: colors.surface }}>
+    <div className="app-layout">
       {/* === SIDEBAR === */}
-      <div className="sidebar">
-        <h2>Recent activities</h2>
+      <aside className="sidebar">
+        <h2 className="sidebar-title">Recent Activities</h2>
+
         {activities.length === 0 && (
-          <p style={{ color: colors.onSurface }}>Loading activities...</p>
+          <p className="sidebar-loading">Loading activities...</p>
         )}
-        {activities.map((a) => (
-          <button
-            key={a.id}
-            onClick={() => loadActivityDetails(a)}
-            style={{
-              background:
-                selectedActivity?.id === a.id
-                  ? "rgba(30, 136, 229, 0.1)"
-                  : "transparent",
-              border: selectedActivity?.id === a.id ? `1px solid ${colors.secondary}` : "none",
-            }}
-          >
-            <div style={{ fontWeight: 600 }}>{a.name}</div>
-            <div style={{ fontSize: 13, opacity: 0.8 }}>
-              {new Date(a.start_date_local).toLocaleDateString()} —{" "}
-              {(a.distance / 1609).toFixed(1)} mi
-            </div>
-            <div style={{ fontSize: 12, color: colors.secondary }}>
-              {a.type}
-            </div>
-          </button>
-        ))}
-      </div>
+
+        <div className="activity-list">
+          {activities.map((a) => (
+            <button
+              key={a.id}
+              className={`activity-button ${
+                selectedActivity?.id === a.id ? "active" : ""
+              }`}
+              onClick={() => loadActivityDetails(a)}
+            >
+              <div className="activity-name">{a.name}</div>
+              <div className="activity-meta">
+                {new Date(a.start_date_local).toLocaleDateString()} —{" "}
+                {(a.distance / 1609).toFixed(1)} mi
+              </div>
+              <div className="activity-type">{a.type}</div>
+            </button>
+          ))}
+        </div>
+      </aside>
 
       {/* === MAIN DASHBOARD === */}
-      <div
-        className="dashboard"
-        style={{
-          flex: 1,
-          padding: 24,
-          overflowY: "auto",
-          background: colors.surface,
-        }}
-      >
-        {/* === TOP BAR === */}
-        <div
-          className="top-bar"
-          style={{
-            marginBottom: 20,
-            background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`,
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: shape.buttonRadius,
-            boxShadow: shadows.medium,
-            ...typography.titleMedium,
-          }}
-        >
-          Strava Dashboard
-        </div>
+      <main className="dashboard">
+        <div className="top-bar">Strava Dashboard</div>
 
-        {/* === RIDE DETAILS VIEW === */}
         <RideDetails
           activity={selectedActivity}
           details={details}
@@ -108,7 +81,7 @@ export default function App() {
           metrics={metrics}
           zones={zones}
         />
-      </div>
+      </main>
     </div>
   );
 }

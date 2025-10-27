@@ -1,38 +1,65 @@
-// === Material Design 3 Red–Blue Theme Tokens ===
+// ==========================================================
+// Material Design 3 (MD3) Theme System – Red & Blue Palette
+// ==========================================================
+
+// ---- Colors ----
 export const colors = {
-  primary: "#E53935",
-  primaryDark: "#B71C1C",
-  secondary: "#1E88E5",
-  secondaryDark: "#0D47A1",
-  surface: "#F9FAFC",
-  surfaceAlt: "#FFFFFF",
-  onSurface: "#1A1A1A",
-  outline: "#E0E0E0",
-  shadow: "rgba(0, 0, 0, 0.1)",
-  hr: "#E53935",
-  power: "#1E88E5",
-  success: "#43A047",
-  warning: "#FB8C00",
-  error: "#E53935",
+  primary: "#E53935",     // Red
+  secondary: "#1E88E5",   // Blue
+  surface: "#FFFFFF",     // Cards, panels
+  background: "#F9F9FB",  // Page background
+  text: "#212121",        // Main text
+  outline: "#DADCE0",     // Borders / dividers
+  shadow: "rgba(0, 0, 0, 0.1)", // General elevation
+  onPrimary: "#FFFFFF",
+  onSurface: "#333333",
 };
+
+// ---- Typography ----
 export const typography = {
-  fontFamily: `"Inter", "Roboto", "Segoe UI", sans-serif`,
-  titleLarge: { fontSize: "22px", fontWeight: 600 },
-  titleMedium: { fontSize: "18px", fontWeight: 500 },
-  body: { fontSize: "15px", fontWeight: 400 },
-  label: { fontSize: "13px", fontWeight: 500, textTransform: "uppercase" },
+  titleLarge: {
+    fontSize: "1.5rem",
+    fontWeight: 700,
+    lineHeight: "1.3em",
+  },
+  titleMedium: {
+    fontSize: "1.25rem",
+    fontWeight: 600,
+    lineHeight: "1.4em",
+  },
+  body: {
+    fontSize: "1rem",
+    fontWeight: 400,
+    lineHeight: "1.6em",
+  },
+  label: {
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    textTransform: "uppercase",
+  },
 };
+
+// ---- Shape ----
 export const shape = {
-  cardRadius: 16,
-  buttonRadius: 12,
+  cardRadius: "12px",
+  buttonRadius: "10px",
+  chipRadius: "8px",
 };
+
+// ---- Shadows ----
 export const shadows = {
-  small: "0 1px 3px rgba(0,0,0,0.1)",
-  medium: "0 2px 6px rgba(0,0,0,0.15)",
-  large: "0 4px 12px rgba(0,0,0,0.2)",
+  small: "0 1px 3px rgba(0, 0, 0, 0.1)",
+  medium: "0 3px 6px rgba(0, 0, 0, 0.12)",
+  large: "0 6px 12px rgba(0, 0, 0, 0.15)",
 };
-export const transitions = {
-  base: "0.2s ease-in-out",
+
+// ---- Theme Helpers ----
+export const theme = {
+  colors,
+  typography,
+  shape,
+  shadows,
 };
-const theme = { colors, typography, shape, shadows, transitions };
+
+// Default export (optional)
 export default theme;
