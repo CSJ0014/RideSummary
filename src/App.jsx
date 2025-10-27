@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import RideDetails from "./components/RideDetails.jsx";
-import { colors, shadows, shape, typography } from "./theme.js";
-import "./theme.css";
+import "./theme.css"; // global MD3 styles
+import { colors } from "./theme.js";
 
 export default function App() {
   const [activities, setActivities] = useState([]);
@@ -12,21 +12,20 @@ export default function App() {
   const [zones, setZones] = useState({});
   const [loadingDetails, setLoadingDetails] = useState(false);
 
-  // === FETCH RECENT ACTIVITIES ===
+  // Load recent activities
   useEffect(() => {
-    async function loadActivities() {
+    (async () => {
       try {
         const res = await fetch("/api/activities?per_page=15");
         const data = await res.json();
-        setActivities(data || []);
-      } catch (err) {
-        console.error("Failed to fetch activities:", err);
+        setActivities(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Failed to fetch activities:", e);
       }
-    }
-    loadActivities();
+    })();
   }, []);
 
-  // === LOAD DETAILS ON CLICK ===
+  // Load details for a clicked activity
   const loadActivityDetails = async (activity) => {
     setSelectedActivity(activity);
     setLoadingDetails(true);
@@ -35,150 +34,63 @@ export default function App() {
       const res = await fetch(`/api/activity/${activity.id}`);
       if (!res.ok) throw new Error("Activity details fetch failed");
       const data = await res.json();
-      setDetails(data.details || {});
-      setSeries(data.series || []);
-      setMetrics(data.metrics || {});
-      setZones(data.zones || {});
-    } catch (err) {
-      console.error("Error loading activity details:", err);
+      setDetails(data?.details ?? {});
+      setSeries(data?.series ?? []);
+      setMetrics(data?.metrics ?? {});
+      setZones(data?.zones ?? {});
+    } catch (e) {
+      console.error("Error loading activity details:", e);
     } finally {
       setLoadingDetails(false);
     }
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        background: colors.background,
-      }}
-    >
-      {/* === SIDEBAR === */}
-      <div
-        style={{
-          width: 260,
-          background: colors.surface,
-          borderRight: `1px solid ${colors.outlineVariant}`,
-          overflowY: "auto",
-          padding: 12,
-        }}
-      >
-        <h3
-          style={{
-            ...typography.titleMedium,
-            color: colors.onSurfaceVariant,
-            marginBottom: 12,
-          }}
-        >
-          Recent Activities
-        </h3>
+    <div className="app-layout">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <h3 className="sidebar-title">Recent Activities</h3>
 
         {activities.length === 0 && (
-          <p style={{ color: colors.onSurfaceVariant }}>Loading activities...</p>
+          <p className="sidebar-loading">Loading activities...</p>
         )}
 
-        {activities.map((a) => {
-          const isActive = selectedActivity?.id === a.id;
-          return (
-            <button
-              key={a.id}
-              onClick={() => loadActivityDetails(a)}
-              style={{
-                display: "block",
-                width: "100%",
-                textAlign: "left",
-                border: "none",
-                outline: "none",
-                background: isActive
-                  ? `rgba(229, 57, 53, 0.1)`
-                  : colors.surface,
-                color: colors.onSurface,
-                borderRadius: shape.cardRadius,
-                boxShadow: isActive ? shadows.small : "none",
-                padding: "10px 12px",
-                marginBottom: 8,
-                cursor: "pointer",
-                transition: "all 0.15s ease",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background =
-                  "rgba(25, 118, 210, 0.08)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = isActive
-                  ? `rgba(229, 57, 53, 0.1)`
-                  : colors.surface)
-              }
-            >
-              <div
-                style={{
-                  ...typography.titleSmall,
-                  color: colors.onSurface,
-                  fontWeight: 600,
-                }}
+        <div className="activity-list">
+          {activities.map((a) => {
+            const isActive = selectedActivity?.id === a.id;
+            return (
+              <button
+                key={a.id}
+                className={`activity-button ${isActive ? "active" : ""}`}
+                onClick={() => loadActivityDetails(a)}
+                title={a.name}
               >
-                {a.name}
-              </div>
-              <div
-                style={{
-                  ...typography.labelSmall,
-                  color: colors.onSurfaceVariant,
-                  opacity: 0.9,
-                }}
-              >
-                {new Date(a.start_date_local).toLocaleDateString()} •{" "}
-                {(a.distance / 1609).toFixed(1)} mi
-              </div>
-              <div
-                style={{
-                  ...typography.labelSmall,
-                  color: colors.secondary,
-                  marginTop: 2,
-                }}
-              >
-                {a.type}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+                <div className="activity-name">{a.name}</div>
+                <div className="activity-meta">
+                  {new Date(a.start_date_local).toLocaleDateString()} •{" "}
+                  {(a.distance / 1609).toFixed(1)} mi
+                </div>
+                <div className="activity-type">{a.type}</div>
+              </button>
+            );
+          })}
+        </div>
+      </aside>
 
-      {/* === MAIN DASHBOARD === */}
-      <div
-        style={{
-          flex: 1,
-          padding: 24,
-          overflowY: "auto",
-          background: colors.surfaceContainerLowest,
-        }}
-      >
-        {/* === TOP BAR === */}
+      {/* Main area */}
+      <main className="dashboard">
         <div
+          className="top-bar"
           style={{
-            marginBottom: 20,
             background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`,
-            color: "white",
-            padding: "14px 22px",
-            borderRadius: shape.cardRadius,
-            boxShadow: shadows.medium,
-            ...typography.titleLarge,
           }}
         >
           Strava Dashboard
         </div>
 
-        {/* === RIDE DETAILS === */}
         {loadingDetails ? (
-          <p
-            style={{
-              ...typography.bodyLarge,
-              color: colors.onSurfaceVariant,
-              textAlign: "center",
-              marginTop: "20vh",
-            }}
-          >
-            Loading ride details...
+          <p className="text-muted" style={{ textAlign: "center", marginTop: "20vh" }}>
+            Loading ride details…
           </p>
         ) : (
           <RideDetails
@@ -189,7 +101,7 @@ export default function App() {
             zones={zones}
           />
         )}
-      </div>
+      </main>
     </div>
   );
 }
