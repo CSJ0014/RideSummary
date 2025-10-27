@@ -12,13 +12,13 @@
   "dependencies": {
     "framer-motion": "^11.3.31",
     "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1",
+    "jspdf": "^3.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.12.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.2",
-    "vite": "^5.4.10"
+    "vite": "^7.1.12"
   }
 }
