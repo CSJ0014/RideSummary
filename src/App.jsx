@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import RideDetails from "./components/RideDetails.jsx";
 import { colors, shadows, shape, typography } from "./theme.js";
+import "./theme.css";
 
 export default function App() {
   const [activities, setActivities] = useState([]);
