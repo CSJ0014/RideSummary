@@ -6,37 +6,106 @@ export default function Sidebar({ onSelect }) {
 
   useEffect(() => {
     fetch("/api/strava/activities")
-      .then((r) => r.json())
-      .then((data) => setRides(Array.isArray(data) ? data.slice(0, 15) : []))
-      .catch((err) => console.error("Failed to fetch rides:", err));
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const filtered = data.filter((a) =>
+            ["Ride", "GravelRide", "VirtualRide"].includes(a.type)
+          );
+          setRides(filtered.slice(0, 15));
+        }
+      })
+      .catch((err) => console.error("Error fetching activities:", err));
   }, []);
 
-  const chipClass = (type) =>
-    type === "Ride" ? "chip ride" :
-    type === "GravelRide" ? "chip gravel" :
-    "chip virtual";
+  const chipColor = (type) => {
+    switch (type) {
+      case "Ride":
+        return "#4FC3F7";
+      case "GravelRide":
+        return "#81C784";
+      case "VirtualRide":
+        return "#F06292";
+      default:
+        return "#aaa";
+    }
+  };
 
   return (
-    <aside className="sidebar">
-      <h2 style={{ margin: 0 }}>Recent Rides</h2>
+    <aside
+      className="sidebar"
+      style={{
+        gridArea: "sidebar",
+        backgroundColor: "#171923",
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+        color: "white",
+        padding: "16px",
+        overflowY: "auto",
+        fontFamily: "Inter, system-ui, sans-serif",
+      }}
+    >
+      <h2 style={{ fontSize: "1rem", fontWeight: 600, marginBottom: 12 }}>
+        Recent Rides
+      </h2>
+      {rides.length === 0 && (
+        <p style={{ fontSize: "0.9rem", color: "#888" }}>Loading...</p>
+      )}
       {rides.map((ride) => (
         <div
           key={ride.id}
-          className={`card ride-item ${activeId === ride.id ? "active" : ""}`}
-          onClick={() => { setActiveId(ride.id); onSelect(ride.id); }}
-          role="button"
-          tabIndex={0}
+          onClick={() => {
+            setActiveId(ride.id);
+            onSelect(ride.id);
+          }}
+          style={{
+            cursor: "pointer",
+            backgroundColor:
+              activeId === ride.id ? "rgba(142,240,255,0.1)" : "transparent",
+            borderRadius: "10px",
+            padding: "10px 12px",
+            marginBottom: "8px",
+            border:
+              activeId === ride.id
+                ? "1px solid rgba(142,240,255,0.4)"
+                : "1px solid transparent",
+            transition: "all 0.2s ease",
+          }}
         >
-          <div>
-            <div className="ride-title">{ride.name}</div>
-            <div className="ride-meta">
-              {(ride.distance / 1609.34).toFixed(1)} mi — {Math.round(ride.moving_time / 60)} min
-            </div>
+          <div
+            style={{
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              color: "white",
+            }}
+          >
+            {ride.name}
           </div>
-          <div className="chips">
-            <span className={chipClass(ride.type)}>
-              {ride.type === "VirtualRide" ? "Virtual" : ride.type === "GravelRide" ? "Gravel" : "Ride"}
-            </span>
+          <div
+            style={{
+              fontSize: "0.8rem",
+              color: "#aaa",
+            }}
+          >
+            {new Date(ride.start_date_local).toLocaleDateString()} •{" "}
+            {(ride.distance / 1609.34).toFixed(1)} mi
+          </div>
+          <div
+            style={{
+              display: "inline-block",
+              marginTop: "6px",
+              backgroundColor: chipColor(ride.type),
+              color: "black",
+              borderRadius: "9999px",
+              padding: "2px 8px",
+              fontSize: "0.75rem",
+              fontWeight: 500,
+            }}
+          >
+            {ride.type === "VirtualRide"
+              ? "Virtual"
+              : ride.type === "GravelRide"
+              ? "Gravel"
+              : "Road"}
           </div>
         </div>
       ))}
